@@ -330,11 +330,14 @@ async def interrogate_agent(request: ChatRequest):
 
 @app.get("/monitor/check-llm")
 async def check_llm_health():
-    """Verify GLM-5.1 connectivity with a lightweight pulse."""
+    """Verify Z.ai Cloud connectivity with a lightweight back-and-forth pulse."""
+    import time
+    start = time.perf_counter()
     try:
         # Simple prompt to verify API keys and network
         pulse = await chat_with_agent("Respond with 'PULSE_OK'.")
-        return {"status": "healthy", "reply": pulse}
+        latency_ms = int((time.perf_counter() - start) * 1000)
+        return {"status": "healthy", "reply": pulse, "latency_ms": latency_ms}
     except Exception as e:
         return {"status": "unhealthy", "error": str(e)}
 

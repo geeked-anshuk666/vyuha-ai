@@ -23,7 +23,7 @@ export default function DoctorModal({ isOpen, onClose }: { isOpen: boolean, onCl
     { name: "Dynamic Proxy", endpoint: "/health", status: "pending", type: "proxy" },
     { name: "Node-A (AWS Mock)", endpoint: "/chaos/node-a/health", status: "pending", type: "node" },
     { name: "Node-B (Azure Mock)", endpoint: "/chaos/node-b/health", status: "pending", type: "node" },
-    { name: "GLM-5.1 AI Engine", endpoint: "/monitor/check-llm", status: "pending", type: "llm" },
+    { name: "Z.ai Cloud Handshake", endpoint: "/monitor/check-llm", status: "pending", type: "llm" },
   ]);
 
   const [isScanning, setIsScanning] = useState(false);
@@ -37,7 +37,7 @@ export default function DoctorModal({ isOpen, onClose }: { isOpen: boolean, onCl
       const start = Date.now();
       try {
         const data = await fn();
-        const latency = Date.now() - start;
+        const latency = data.latency_ms || Date.now() - start;
         setResults(prev => {
           const next = [...prev];
           next[index] = { 
