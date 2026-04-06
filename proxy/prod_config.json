@@ -1,0 +1,17 @@
+{
+    "formation": "production-consolidated",
+    "routes": [
+        {
+            "name": "node-a",
+            "url": "http://127.0.0.1:8001",
+            "weight": 50,
+            "active": true
+        },
+        {
+            "name": "node-b",
+            "url": "http://127.0.0.1:8002",
+            "weight": 50,
+            "active": true
+        }
+    ]
+}

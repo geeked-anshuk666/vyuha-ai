@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+build
+.git
+.gitignore
+.env
+.env.local
+meta_docs
+README.md
+AGENTS.md
+CLAUDE.md

@@ -1,0 +1,28 @@
+# Build Context Exclusions
+node_modules
+venv
+.pytest_cache
+__pycache__
+*.pyc
+.agent
+.kilocode
+.git
+.gitignore
+*.db
+.env
+.env.example
+
+# Large application folders (already handled by their own Dockerfiles or ignored by root)
+dashboard/node_modules
+dashboard/.next
+dashboard/out
+dashboard/build
+demo_automation/node_modules
+
+# Documentation and meta
+meta_docs
+docs
+*.md
+walkthrough.md
+implementation_plan.md
+task.md

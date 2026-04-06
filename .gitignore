@@ -1,0 +1,50 @@
+# --- Local Environment (KEEP ON DISK, IGNORE IN GIT) ---
+venv/
+.venv/
+.agent/
+.kilocode/
+node_modules/
+dashboard/node_modules/
+.env
+.env.local
+
+# --- Build Artifacts ---
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+.cache
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# --- Database & Logs ---
+*.db
+*.sqlite
+*.sqlite3
+*.log
+data/
+logs/
+
+# --- IDE & OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Temp & Scratch ---
+test_config_tmp.json
+task.md
+implementation_plan.md
+walkthrough.md
+analysis_results.md
+research_notes.md
+experiment_results.md
+# Keep scripts/ for production deployment
+!scripts/
+docs/
+meta_docs/

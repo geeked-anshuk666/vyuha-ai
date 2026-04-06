@@ -1,0 +1,17 @@
+{
+    "formation": "balanced",
+    "routes": [
+        {
+            "name": "node-a",
+            "url": "http://node-a:8000",
+            "weight": 50,
+            "active": true
+        },
+        {
+            "name": "node-b",
+            "url": "http://node-b:8000",
+            "weight": 50,
+            "active": true
+        }
+    ]
+}

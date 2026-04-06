@@ -1,0 +1,97 @@
+services:
+  # --- DATA PLANE ---
+
+  node-a:
+    build: ./nodes
+    container_name: vyuha-node-a
+    environment:
+      - NODE_NAME=node-a
+      - CLOUD_PROVIDER=aws-mock
+      - REGION=us-east-1
+    ports:
+      - "8001:8000"
+    networks:
+      - vyuha-net
+    restart: unless-stopped
+
+  node-b:
+    build: ./nodes
+    container_name: vyuha-node-b
+    environment:
+      - NODE_NAME=node-b
+      - CLOUD_PROVIDER=azure-mock
+      - REGION=westeurope
+    ports:
+      - "8002:8000"
+    networks:
+      - vyuha-net
+    restart: unless-stopped
+
+  vyuha-proxy:
+    build: ./proxy
+    container_name: vyuha-proxy
+    environment:
+      - CONFIG_PATH=/app/config.json
+      - RELOAD_INTERVAL=3
+      - VYUHA_API_KEY=${VYUHA_API_KEY:-vyuha-default-secret-key}
+    ports:
+      - "8000:8000"
+    volumes:
+      - proxy-config:/app
+    networks:
+      - vyuha-net
+    depends_on:
+      - node-a
+      - node-b
+    restart: unless-stopped
+
+  # --- CONTROL PLANE ---
+
+  orchestrator:
+    build:
+      context: .
+      dockerfile: ./control_plane/Dockerfile
+    container_name: vyuha-orchestrator
+    environment:
+      - VYUHA_DB_PATH=/app/data/vyuha.db
+      - HEALTH_CHECK_INTERVAL=5
+      - MAX_AGENT_FAILURES=3
+      - GLM_API_KEY=${GLM_API_KEY:-placeholder-key}
+      - GLM_API_URL=${GLM_API_URL:-https://open.bigmodel.cn/api/paas/v4/chat/completions}
+      - GLM_MODEL=${GLM_MODEL:-glm-5.1}
+      - VYUHA_API_KEY=${VYUHA_API_KEY:-vyuha-default-secret-key}
+    ports:
+      - "9000:9000"
+    volumes:
+      - orchestrator-data:/app/data
+    networks:
+      - vyuha-net
+    depends_on:
+      - node-a
+      - node-b
+      - vyuha-proxy
+    restart: unless-stopped
+
+  # --- UI DASHBOARD ---
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: vyuha-dashboard
+    environment:
+      - NEXT_PUBLIC_ORCHESTRATOR_URL=http://orchestrator:9000
+    ports:
+      - "3000:3000"
+    networks:
+      - vyuha-net
+    depends_on:
+      - orchestrator
+    restart: unless-stopped
+
+networks:
+  vyuha-net:
+    driver: bridge
+
+volumes:
+  proxy-config:
+  orchestrator-data:

@@ -1,0 +1,42 @@
+# Multi-stage build for consolidated Vyuha AI Backend ($0 Deployment)
+FROM python:3.13-slim as builder
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install all requirements
+COPY control_plane/requirements.txt ./cp_reqs.txt
+COPY proxy/requirements.txt ./proxy_reqs.txt
+COPY nodes/requirements.txt ./nodes_reqs.txt
+
+RUN pip install --no-cache-dir -r cp_reqs.txt \
+    && pip install --no-cache-dir -r proxy_reqs.txt \
+    && pip install --no-cache-dir -r nodes_reqs.txt
+
+# Final image
+FROM python:3.13-slim
+
+WORKDIR /app
+
+# Copy installed packages
+COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy codebase
+COPY . .
+
+# Environment variables for production
+ENV RENDER=true
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
+
+# Expose the orchestrator port (Render will map this to the public URL)
+EXPOSE 9000
+
+# Launch the consolidator
+CMD ["python", "scripts/prod_consolidator.py"]

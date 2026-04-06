@@ -1,0 +1,69 @@
+import axios from "axios";
+
+// Support both local development (rewrites) and production (absolute URL)
+const baseURL = process.env.NEXT_PUBLIC_ORCHESTRATOR_URL || "/orchestrator-api";
+
+const API = axios.create({
+  baseURL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+export interface NodeState {
+  node_name: string;
+  state: "HEALTHY" | "DEAD";
+  last_seen: string;
+  error?: string;
+}
+
+export interface MonitorStatus {
+  orchestrator_uptime: number;
+  monitoring_active: boolean;
+  node_states: NodeState[];
+  active_incidents: any[];
+  pending_proposals: any[];
+  circuit_breaker_active: boolean;
+  consecutive_agent_failures: number;
+}
+
+export const fetchStatus = async (): Promise<MonitorStatus> => {
+  const { data } = await API.get("/monitor/status");
+  return data;
+};
+
+export const fetchProposals = async () => {
+  const { data } = await API.get("/proposals");
+  return data.proposals || [];
+};
+
+export const fetchLearnings = async () => {
+  const { data } = await API.get("/learnings");
+  return data.learnings || [];
+};
+
+export const approveProposal = async (proposalId: number, feedback: string) => {
+  const { data } = await API.post("/approve", {
+    proposal_id: proposalId,
+    feedback,
+  });
+  return data;
+};
+
+export const rejectProposal = async (proposalId: number, feedback: string) => {
+  const { data } = await API.post("/reject", {
+    proposal_id: proposalId,
+    feedback,
+  });
+  return data;
+};
+
+export const triggerTriage = async () => {
+  const { data } = await API.post("/trigger-triage");
+  return data;
+};
+
+export const interrogateAgent = async (message: string) => {
+  const { data } = await API.post("/chat", { message });
+  return data.reply;
+};
