@@ -6,7 +6,7 @@ import {
   HeartPulse, Activity, Brain, Server, Shield, 
   X, CheckCircle2, AlertTriangle, Loader2 
 } from "lucide-react";
-import { checkLLMHealth, checkNodeHealthProxy, fetchStatus } from "@/lib/api";
+import { checkLLMHealth, checkNodeHealthProxy, checkProxyPulse, fetchStatus } from "@/lib/api";
 
 interface DiagnosticResult {
   name: string;
@@ -20,7 +20,7 @@ interface DiagnosticResult {
 export default function DoctorModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const [results, setResults] = useState<DiagnosticResult[]>([
     { name: "Orchestrator Core", endpoint: "/health", status: "pending", type: "orchestrator" },
-    { name: "Dynamic Proxy", endpoint: "/health", status: "pending", type: "proxy" },
+    { name: "Dynamic Proxy", endpoint: "/monitor/check-proxy", status: "pending", type: "proxy" },
     { name: "Node-A (AWS Mock)", endpoint: "/chaos/node-a/health", status: "pending", type: "node" },
     { name: "Node-B (Azure Mock)", endpoint: "/chaos/node-b/health", status: "pending", type: "node" },
     { name: "Z.ai Cloud Handshake", endpoint: "/monitor/check-llm", status: "pending", type: "llm" },
@@ -59,7 +59,7 @@ export default function DoctorModal({ isOpen, onClose }: { isOpen: boolean, onCl
 
     // Run sequentially for better visual feedback
     await runCheck(0, fetchStatus); // Orchestrator
-    await runCheck(1, () => fetch("/orchestrator-api/health").then(r => r.json())); // Proxy
+    await runCheck(1, checkProxyPulse); // Proxy bridge
     await runCheck(2, () => checkNodeHealthProxy("node-a"));
     await runCheck(3, () => checkNodeHealthProxy("node-b"));
     await runCheck(4, checkLLMHealth);

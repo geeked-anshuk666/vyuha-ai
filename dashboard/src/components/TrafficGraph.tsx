@@ -9,6 +9,7 @@ export default function TrafficGraph() {
 
   useEffect(() => {
     const fetchMetrics = async () => {
+      if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') return;
       try {
         const res = await fetch("http://localhost:8005/metrics");
         const json = await res.json();

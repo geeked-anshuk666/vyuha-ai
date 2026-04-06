@@ -341,6 +341,16 @@ async def check_llm_health():
     except Exception as e:
         return {"status": "unhealthy", "error": str(e)}
 
+@app.get("/monitor/check-proxy")
+async def check_proxy_health():
+    """Verify the Dynamic Proxy is alive on internal localhost:8000."""
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get("http://127.0.0.1:8000/health")
+            return {"status": "healthy", "reply": resp.json()}
+    except Exception as e:
+        return {"status": "unhealthy", "error": str(e)}
+
 @app.get("/chaos/{node_name}/health")
 async def proxy_chaos_health(node_name: str):
     """Proxies health checks to internal nodes for diagnostics."""

@@ -78,6 +78,11 @@ export const recoverNode = async (nodeName: string) => {
   return data;
 };
 
+export const checkProxyPulse = async () => {
+  const { data } = await API.get("/monitor/check-proxy");
+  return data;
+};
+
 export const checkLLMHealth = async () => {
   const { data } = await API.get("/monitor/check-llm");
   return data;
