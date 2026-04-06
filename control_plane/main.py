@@ -318,9 +318,36 @@ async def reject_proposal(request: RejectionRequest):
 async def interrogate_agent(request: ChatRequest):
     """
     Read-only human query endpoint for Quizzing the AI.
+    Now includes system context for smarter interrogation.
     """
-    response = await chat_with_agent(request.message)
+    active_incidents = await db.get_active_incidents()
+    response = await chat_with_agent(
+        request.message, 
+        node_states=runtime.node_states, 
+        active_incidents=active_incidents
+    )
     return {"reply": response}
+
+@app.get("/monitor/check-llm")
+async def check_llm_health():
+    """Verify GLM-5.1 connectivity with a lightweight pulse."""
+    try:
+        # Simple prompt to verify API keys and network
+        pulse = await chat_with_agent("Respond with 'PULSE_OK'.")
+        return {"status": "healthy", "reply": pulse}
+    except Exception as e:
+        return {"status": "unhealthy", "error": str(e)}
+
+@app.get("/chaos/{node_name}/health")
+async def proxy_chaos_health(node_name: str):
+    """Proxies health checks to internal nodes for diagnostics."""
+    node_map = {"node-a": "http://127.0.0.1:8001", "node-b": "http://127.0.0.1:8002"}
+    if node_name not in node_map:
+        raise HTTPException(status_code=404, detail="Node mapping not found")
+        
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(f"{node_map[node_name]}/health")
+        return resp.json()
 
 
 # --- Evolutionary Memory ---

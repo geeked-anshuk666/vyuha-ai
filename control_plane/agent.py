@@ -157,13 +157,17 @@ async def _call_glm(prompt: str, system: str = "") -> dict:
         return {}
 
 
-async def chat_with_agent(question: str) -> str:
+async def chat_with_agent(question: str, node_states: list[NodeHealthSnapshot] = [], active_incidents: list = []) -> str:
     """Interrogate the agent via a read-only chat interface with model fallback."""
     learnings_text = await get_learnings_context()
+    situation_text = "No active incidents detected." if not active_incidents else "DETECTED INCIDENTS: " + str([i.model_dump() for i in active_incidents])
+    node_text = "Current Node States: " + str([n.model_dump() for n in node_states])
+    
     system = (
         "You are Vyuha AI, an autonomous multi-cloud orchestrator. "
         "The human operator is asking you a question about your status, past learnings, or current configuration. "
         "Answer naturally, directly, and concisely. DO NOT output JSON. "
+        f"\n\nCURRENT CLUSTER STATE:\n{node_text}\n{situation_text}"
         f"\n\nCURRENT LEARNING MEMORY:\n{learnings_text}"
     )
 

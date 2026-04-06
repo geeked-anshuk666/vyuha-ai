@@ -15,6 +15,7 @@ import ChaosControls from "@/components/ChaosControls";
 import TrafficGraph from "@/components/TrafficGraph";
 import AgentChat from "@/components/AgentChat";
 import WalkthroughOverlay from "@/components/WalkthroughOverlay";
+import DoctorModal from "@/components/DoctorModal";
 
 interface Proposal {
   id: number;
@@ -46,6 +47,7 @@ export default function MissionControl() {
   
   const [feedback, setFeedback] = useState("");
   const [processingId, setProcessingId] = useState<number | null>(null);
+  const [showDoctor, setShowDoctor] = useState(false);
 
   const loadData = async () => {
     setIsRefreshing(true);
@@ -101,7 +103,7 @@ export default function MissionControl() {
 
   return (
     <div className="min-h-screen p-8 max-w-7xl mx-auto space-y-8 pb-20">
-      
+      <DoctorModal isOpen={showDoctor} onClose={() => setShowDoctor(false)} />
       {/* Header */}
       <header className="flex items-center justify-between">
         <div>
@@ -115,6 +117,13 @@ export default function MissionControl() {
           <div className="text-sm px-3 py-1 rounded-full bg-vyuha-surface border border-vyuha-border text-vyuha-muted">
             Uptime: {status.orchestrator_uptime}s
           </div>
+          <button 
+            onClick={() => setShowDoctor(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-vyuha-success/20 text-vyuha-success hover:text-white rounded-lg text-xs font-bold transition-all border border-vyuha-success/20"
+          >
+            <Activity className="w-4 h-4 animate-pulse" />
+            HEALTH CHECK
+          </button>
           <button 
             onClick={loadData}
             className="p-2 rounded-full hover:bg-vyuha-surface transition-colors text-vyuha-muted border border-vyuha-border"

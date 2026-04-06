@@ -13,7 +13,7 @@ const API = axios.create({
 export interface NodeState {
   node_name: string;
   state: "HEALTHY" | "DEAD";
-  last_seen: string;
+  checked_at: string;
   error?: string;
 }
 
@@ -75,5 +75,15 @@ export const injectChaos = async (nodeName: string, state: string, reason: strin
 
 export const recoverNode = async (nodeName: string) => {
   const { data } = await API.post(`/chaos/${nodeName}/recover`);
+  return data;
+};
+
+export const checkLLMHealth = async () => {
+  const { data } = await API.get("/monitor/check-llm");
+  return data;
+};
+
+export const checkNodeHealthProxy = async (nodeName: string) => {
+  const { data } = await API.get(`/chaos/${nodeName}/health`);
   return data;
 };
