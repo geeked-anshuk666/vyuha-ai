@@ -162,7 +162,7 @@ export default function MissionControl() {
                     <Server className={node.state === "HEALTHY" ? "text-vyuha-success" : "text-vyuha-danger"} />
                     <div>
                       <div className="font-medium text-white">{node.node_name.toUpperCase()}</div>
-                      <div className="text-xs text-vyuha-muted">Seen: {new Date(node.last_seen).toLocaleTimeString()}</div>
+                      <div className="text-xs text-vyuha-muted">Seen: {new Date(node.checked_at).toLocaleTimeString()}</div>
                     </div>
                   </div>
                   <div className={`px-2 py-1 text-xs font-bold rounded ${node.state === "HEALTHY" ? "bg-vyuha-success-bg text-vyuha-success" : "bg-vyuha-danger-bg text-vyuha-danger"}`}>

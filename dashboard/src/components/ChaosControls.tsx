@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { injectChaos as apiInjectChaos, recoverNode as apiRecoverNode } from "@/lib/api";
 
 export default function ChaosControls() {
   const [loading, setLoading] = useState<string | null>(null);
@@ -8,12 +9,7 @@ export default function ChaosControls() {
   const injectChaos = async (nodeName: string, state: string, reason: string) => {
     setLoading(`${nodeName}-${state}`);
     try {
-      // Because we mapped /api/node-a/ to docker node-a:8000
-      await fetch(`/api/${nodeName}/fail`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ state, reason }),
-      });
+      await apiInjectChaos(nodeName, state, reason);
     } catch (e) {
       console.error("Chaos injection failed", e);
     } finally {
@@ -24,7 +20,7 @@ export default function ChaosControls() {
   const recoverNode = async (nodeName: string) => {
     setLoading(`${nodeName}-recover`);
     try {
-      await fetch(`/api/${nodeName}/recover`, { method: "POST" });
+      await apiRecoverNode(nodeName);
     } catch (e) {
       console.error("Recovery failed", e);
     } finally {

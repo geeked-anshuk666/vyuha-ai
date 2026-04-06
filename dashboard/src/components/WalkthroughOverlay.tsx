@@ -98,7 +98,15 @@ export default function WalkthroughOverlay() {
 
     updatePosition();
     window.addEventListener("resize", updatePosition);
-    return () => window.removeEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition);
+    
+    const timer = setTimeout(updatePosition, 500);
+
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition);
+      clearTimeout(timer);
+    };
   }, [currentStep, isOpen]);
 
   if (!isOpen) {

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Support both local development (rewrites) and production (absolute URL)
-const baseURL = process.env.NEXT_PUBLIC_ORCHESTRATOR_URL || "/orchestrator-api";
+export const baseURL = process.env.NEXT_PUBLIC_ORCHESTRATOR_URL || "/orchestrator-api";
 
 const API = axios.create({
   baseURL,
@@ -66,4 +66,14 @@ export const triggerTriage = async () => {
 export const interrogateAgent = async (message: string) => {
   const { data } = await API.post("/chat", { message });
   return data.reply;
+};
+
+export const injectChaos = async (nodeName: string, state: string, reason: string) => {
+  const { data } = await API.post(`/chaos/${nodeName}/fail`, { state, reason });
+  return data;
+};
+
+export const recoverNode = async (nodeName: string) => {
+  const { data } = await API.post(`/chaos/${nodeName}/recover`);
+  return data;
 };

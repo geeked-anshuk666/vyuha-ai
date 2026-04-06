@@ -342,6 +342,32 @@ async def reset_circuit_breaker():
     return {"status": "circuit_breaker_reset", "agent_enabled": True}
 
 
+# --- Chaos Proxy (Frontend Bridge) ---
+import httpx
+
+@app.post("/chaos/{node_name}/fail")
+async def proxy_chaos_fail(node_name: str, request: Request):
+    """Proxies chaos injection to internal nodes."""
+    node_map = {"node-a": "http://127.0.0.1:8001", "node-b": "http://127.0.0.1:8002"}
+    if node_name not in node_map:
+        raise HTTPException(status_code=404, detail="Node mapping not found")
+        
+    body = await request.json()
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(f"{node_map[node_name]}/fail", json=body)
+        return resp.json()
+
+@app.post("/chaos/{node_name}/recover")
+async def proxy_chaos_recover(node_name: str):
+    """Proxies recovery commands to internal nodes."""
+    node_map = {"node-a": "http://127.0.0.1:8001", "node-b": "http://127.0.0.1:8002"}
+    if node_name not in node_map:
+        raise HTTPException(status_code=404, detail="Node mapping not found")
+        
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(f"{node_map[node_name]}/recover")
+        return resp.json()
+
 # --- Manual Trigger (for demos) ---
 
 @app.post("/trigger-triage")
