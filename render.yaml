@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: vyuha-ai-backend
+    env: docker
+    dockerfilePath: Dockerfile.production
+    plan: free
+    region: ohio
+    healthCheckPath: /health
+    envVars:
+      - key: RENDER
+        value: "true"
+      - key: GLM_API_KEY
+        sync: false
+      - key: PYTHONUNBUFFERED
+        value: "1"

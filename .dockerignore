@@ -1,28 +1,35 @@
-# Build Context Exclusions
-node_modules
-venv
-.pytest_cache
-__pycache__
-*.pyc
-.agent
-.kilocode
-.git
-.gitignore
-*.db
+# Local environment
+venv/
+.venv/
+node_modules/
+.agent/
+.kilocode/
+
+# Build artifacts
+**/__pycache__/
+**/*.pyc
+.next/
+out/
+.pytest_cache/
+.coverage
+
+# Secrets and config
 .env
-.env.example
+.env.local
 
-# Large application folders (already handled by their own Dockerfiles or ignored by root)
-dashboard/node_modules
-dashboard/.next
-dashboard/out
-dashboard/build
-demo_automation/node_modules
+# Docker Redundancy
+dashboard/Dockerfile
+control_plane/Dockerfile
+nodes/Dockerfile
+proxy/Dockerfile
+docker-compose.yaml
 
-# Documentation and meta
-meta_docs
-docs
+# Documentation
 *.md
-walkthrough.md
-implementation_plan.md
-task.md
+!README.md
+docs/
+meta_docs/
+
+# Git
+.git/
+.gitignore

@@ -3,13 +3,13 @@ FROM python:3.13-slim as builder
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies (Layer 1)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install all requirements
+# Install all requirements (Layer 2)
 COPY control_plane/requirements.txt ./cp_reqs.txt
 COPY proxy/requirements.txt ./proxy_reqs.txt
 COPY nodes/requirements.txt ./nodes_reqs.txt
@@ -18,25 +18,32 @@ RUN pip install --no-cache-dir -r cp_reqs.txt \
     && pip install --no-cache-dir -r proxy_reqs.txt \
     && pip install --no-cache-dir -r nodes_reqs.txt
 
-# Final image
+# Final stage (Layer 3)
 FROM python:3.13-slim
 
+# Security: Run as non-privileged user for production safety
+RUN groupadd -r vyuha && useradd -r -g vyuha vyuha
 WORKDIR /app
 
-# Copy installed packages
+# Copy only what's needed from builder
 COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy codebase
-COPY . .
+# Copy source code (Layer 4)
+# .dockerignore ensures we don't copy local junk (venv, node_modules, etc.)
+COPY --chown=vyuha:vyuha . .
 
-# Environment variables for production
-ENV RENDER=true
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app
+USER vyuha
 
-# Expose the orchestrator port (Render will map this to the public URL)
+# Environment variables for production parity
+ENV RENDER=true \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app
+
 EXPOSE 9000
 
-# Launch the consolidator
+# Metadata for project identification
+LABEL org.opencontainers.image.source="https://github.com/geeked-anshuk666/vyuha-ai"
+LABEL org.opencontainers.image.description="Vyuha AI: Multi-agent Traffic Orchestration Monolith"
+
 CMD ["python", "scripts/prod_consolidator.py"]
