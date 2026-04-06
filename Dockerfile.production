@@ -3,13 +3,13 @@ FROM python:3.13-slim as builder
 
 WORKDIR /app
 
-# Install system dependencies (Layer 1)
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install all requirements (Layer 2)
+# Install all requirements
 COPY control_plane/requirements.txt ./cp_reqs.txt
 COPY proxy/requirements.txt ./proxy_reqs.txt
 COPY nodes/requirements.txt ./nodes_reqs.txt
@@ -18,20 +18,25 @@ RUN pip install --no-cache-dir -r cp_reqs.txt \
     && pip install --no-cache-dir -r proxy_reqs.txt \
     && pip install --no-cache-dir -r nodes_reqs.txt
 
-# Final stage (Layer 3)
+# Final stage
 FROM python:3.13-slim
 
-# Security: Run as non-privileged user for production safety
-RUN groupadd -r vyuha && useradd -r -g vyuha vyuha
+# Security: Create user and pre-configure directory ownership
+RUN groupadd -r vyuha && useradd -r -g vyuha vyuha && \
+    mkdir -p /app && chown vyuha:vyuha /app
+
 WORKDIR /app
 
 # Copy only what's needed from builder
 COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy source code (Layer 4)
+# Copy source code with correct ownership
 # .dockerignore ensures we don't copy local junk (venv, node_modules, etc.)
 COPY --chown=vyuha:vyuha . .
+
+# Ensure writable data directory exists
+RUN mkdir -p /app/data && chown -R vyuha:vyuha /app/data
 
 USER vyuha
 
@@ -44,6 +49,6 @@ EXPOSE 9000
 
 # Metadata for project identification
 LABEL org.opencontainers.image.source="https://github.com/geeked-anshuk666/vyuha-ai"
-LABEL org.opencontainers.image.description="Vyuha AI: Multi-agent Traffic Orchestration Monolith"
+LABEL org.opencontainers.image.description="Vyuha AI: Multi-agent Traffic Orchestration Monolith (Optimized)"
 
 CMD ["python", "scripts/prod_consolidator.py"]

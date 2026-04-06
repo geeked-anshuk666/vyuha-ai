@@ -48,21 +48,37 @@ services = [
 ]
 
 async def main():
-    logger.info("Initializing Vyuha AI Production Consolidation...")
-    
-    # Ensure logs and proxy config exist
-    os.makedirs("/app/data", exist_ok=True)
-    
-    # Start all
-    for s in services:
-        await s.start()
-        await asyncio.sleep(1) # Staggered start
+    try:
+        logger.info("Initializing Vyuha AI Production Consolidation...")
+        
+        # Ensure we are in the right directory
+        logger.info(f"Current working directory: {os.getcwd()}")
+        logger.info(f"Effective UID: {os.getuid()}")
 
-    # Wait for completion (or kill)
-    await asyncio.gather(*(s.wait() for s in services))
+        # Ensure logs and proxy config exist
+        try:
+            os.makedirs("/app/data", exist_ok=True)
+            logger.info("Data directory verified/created.")
+        except Exception as e:
+            logger.error(f"CRITICAL: Failed to create /app/data: {e}")
+            raise
+
+        # Start all
+        for s in services:
+            await s.start()
+            await asyncio.sleep(1) # Staggered start
+
+        # Wait for completion (or kill)
+        await asyncio.gather(*(s.wait() for s in services))
+    except Exception as e:
+        logger.exception(f"FATAL ERROR during startup: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
         logger.info("Termination signal received.")
+    except Exception as e:
+        logger.error(f"Unhandled exception in run loop: {e}")
+        sys.exit(1)
