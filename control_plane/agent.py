@@ -50,7 +50,7 @@ CAPABILITIES (Walled Garden — you can ONLY use these):
 
 RULES:
 - NEVER suggest direct shell commands. You operate through API tools only.
-- Always explain your reasoning step-by-step.
+- Always explain your reasoning step-by-step using Markdown headers (####) and bullet points.
 - Reference past learnings when available.
 - Be honest about uncertainty — state your confidence level.
 
@@ -63,10 +63,10 @@ CURRENT SITUATION:
 Analyze the situation and propose a formation change if needed.
 Respond in this JSON format:
 {{
-    "analysis": "Your step-by-step analysis of the situation",
+    "analysis": "Your step-by-step analysis of the situation (use Markdown headers and bullets)",
     "action": "reroute|deactivate_node|reactivate_node|rebalance|none",
     "target_node": "the node to act on",
-    "reasoning": "Why this is the best action",
+    "reasoning": "Why this is the best action (use Markdown headers and bullets)",
     "remediation_action": "restart_node|none (Optional SRE remediation to execute after route change)",
     "confidence": 0.0-1.0,
     "proposed_formation": {{
@@ -90,8 +90,8 @@ HUMAN FEEDBACK: {feedback}
 Reflect on this outcome. What did you learn?
 Respond in this JSON format:
 {{
-    "reflection": "Your honest self-assessment of the proposal",
-    "lesson_learned": "A concise rule or pattern for future incidents",
+    "reflection": "Your honest self-assessment of the proposal (Markdown supported)",
+    "lesson_learned": "A concise rule or pattern for future incidents (Markdown supported)",
     "would_change": "What you would do differently next time"
 }}
 """

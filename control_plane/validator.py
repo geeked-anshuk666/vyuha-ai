@@ -197,7 +197,7 @@ class ShadowValidator:
         for route in active_routes:
             url = route.get("url", "")
             try:
-                async with httpx.AsyncClient(timeout=3.0) as client:
+                async with httpx.AsyncClient(timeout=10.0) as client:
                     resp = await client.get(f"{url}/health")
                     if resp.status_code != 200:
                         unreachable.append(f"{route['name']} (HTTP {resp.status_code})")
@@ -219,7 +219,7 @@ class ShadowValidator:
         check = {"name": "idempotency", "passed": True, "detail": ""}
 
         try:
-            async with httpx.AsyncClient(timeout=3.0) as client:
+            async with httpx.AsyncClient(timeout=10.0) as client:
                 resp = await client.get(f"{self.proxy_url}/proxy/status")
                 if resp.status_code == 200:
                     current = resp.json()

@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Server, Activity, ShieldAlert, Cpu, Terminal, 
-  ChevronRight, CheckCircle2, XCircle, RefreshCw, AlertTriangle
+  ChevronRight, CheckCircle2, XCircle, RefreshCw, AlertTriangle,
+  Loader2
 } from "lucide-react";
 import { 
   fetchStatus, fetchProposals, fetchLearnings, 
@@ -16,6 +17,7 @@ import TrafficGraph from "@/components/TrafficGraph";
 import AgentChat from "@/components/AgentChat";
 import WalkthroughOverlay from "@/components/WalkthroughOverlay";
 import DoctorModal from "@/components/DoctorModal";
+import ReactMarkdown from "react-markdown";
 
 interface Proposal {
   id: number;
@@ -47,6 +49,8 @@ export default function MissionControl() {
   
   const [feedback, setFeedback] = useState("");
   const [processingId, setProcessingId] = useState<number | null>(null);
+  const [actionType, setActionType] = useState<"approve" | "reject" | null>(null);
+  const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const [showDoctor, setShowDoctor] = useState(false);
 
   const loadData = async () => {
@@ -80,6 +84,9 @@ export default function MissionControl() {
   const handleAction = async (proposalId: number, type: "approve" | "reject") => {
     console.log(`[DASHBOARD] Triggering ${type} for proposal ${proposalId}`);
     setProcessingId(proposalId);
+    setActionType(type);
+    setErrorStatus(null);
+    
     try {
       if (type === "approve") {
         await approveProposal(proposalId, feedback || "Approved via Dashboard");
@@ -88,13 +95,15 @@ export default function MissionControl() {
       }
       setFeedback("");
       console.log(`[DASHBOARD] Successfully ${type}d proposal ${proposalId}`);
-    } catch (e: unknown) {
-      const error = e as Error;
-      console.error(`[DASHBOARD] Action ${type} failed:`, error);
-      alert(`Critical Error: Could not ${type} proposal. Check console for details.`);
+    } catch (e: any) {
+      console.error(`[DASHBOARD] Action ${type} failed:`, e);
+      const detail = e.response?.data?.detail || e.message;
+      setErrorStatus(`Failed to ${type}: ${typeof detail === 'object' ? JSON.stringify(detail) : detail}`);
+    } finally {
+      setProcessingId(null);
+      setActionType(null);
+      loadData();
     }
-    setProcessingId(null);
-    loadData();
   };
 
   if (!status) {
@@ -209,9 +218,16 @@ export default function MissionControl() {
           <section id="proposals-container" className="glass-panel p-6 shadow-[0_0_30px_rgba(59,130,246,0.1)]">
             <h2 className="text-xl font-semibold text-white flex items-center gap-2 mb-6">
               <ShieldAlert className="w-5 h-5 text-vyuha-primary" /> 
-              Companion Insight
+              Z.ai Companion Insight
             </h2>
             
+            {errorStatus && (
+              <div className="mb-4 p-3 bg-vyuha-danger-bg border border-vyuha-danger/30 text-vyuha-danger text-sm rounded-lg flex gap-2 items-center">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                {errorStatus}
+                <button onClick={() => setErrorStatus(null)} className="ml-auto hover:text-white">×</button>
+              </div>
+            )}
             <AnimatePresence>
               {proposals.length === 0 ? (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-10 border border-dashed border-vyuha-border rounded-lg">
@@ -248,7 +264,9 @@ export default function MissionControl() {
                           </div>
                         </div>
                         <p className="text-sm font-serif text-vyuha-muted mb-4 border-l-2 border-vyuha-primary/50 pl-3">
-                          &quot;{prop.agent_reasoning}&quot;
+                          <div className="prose prose-invert prose-sm max-w-none prose-headings:text-vyuha-primary prose-headings:font-bold prose-headings:mb-2 prose-p:mb-3">
+                            <ReactMarkdown>{prop.agent_reasoning}</ReactMarkdown>
+                          </div>
                         </p>
                         
                         <div className="bg-[#09090b] p-3 rounded font-mono text-xs text-vyuha-muted overflow-x-auto">
@@ -271,14 +289,16 @@ export default function MissionControl() {
                             onClick={() => handleAction(prop.id, "reject")}
                             className="flex-1 sm:flex-none px-4 py-2 border border-vyuha-border hover:bg-vyuha-danger/20 hover:text-vyuha-danger hover:border-vyuha-danger text-white text-sm font-medium rounded transition flex items-center justify-center gap-2"
                           >
-                            <XCircle className="w-4 h-4" /> Reject
+                            {processingId === prop.id && actionType === "reject" ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                            {processingId === prop.id && actionType === "reject" ? "Rejecting..." : "Reject"}
                           </button>
                           <button 
                             disabled={processingId === prop.id}
                             onClick={() => handleAction(prop.id, "approve")}
                             className="flex-1 sm:flex-none px-4 py-2 bg-vyuha-primary hover:bg-vyuha-primary-hover text-white text-sm font-medium rounded transition flex items-center justify-center gap-2"
                           >
-                            <CheckCircle2 className="w-4 h-4" /> {processingId === prop.id ? "Validating..." : "Approve"}
+                            {processingId === prop.id && actionType === "approve" ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                            {processingId === prop.id && actionType === "approve" ? "Validating..." : "Approve"}
                           </button>
                         </div>
                       </div>
@@ -293,7 +313,7 @@ export default function MissionControl() {
           <section id="chat-container" className="glass-panel p-6">
             <h2 className="text-xl font-semibold text-white flex items-center gap-2 mb-6">
               <Terminal className="w-5 h-5 text-vyuha-primary" /> 
-              Agent Interrogation
+              Gen-Engine Interrogation
             </h2>
             <AgentChat />
           </section>
@@ -322,11 +342,14 @@ export default function MissionControl() {
                           {new Date(l.created_at).toLocaleDateString()}
                         </span>
                       </div>
-                      <p className="text-sm text-white font-medium mb-3">{l.lesson_learned}</p>
+                      <div className="text-sm text-white font-medium mb-3 prose prose-invert prose-sm">
+                        <ReactMarkdown>{l.lesson_learned}</ReactMarkdown>
+                      </div>
                       
-                      <div className="text-xs text-vyuha-muted bg-[#09090b] p-3 rounded border-l-2 border-[#27272a]">
-                        <div className="mb-1"><span className="uppercase font-bold tracking-wider opacity-70">Agent Reflection:</span> {l.agent_reflection}</div>
-                        {l.human_feedback && <div className="mt-2 text-white"><span className="uppercase font-bold tracking-wider opacity-70 text-vyuha-primary">Human Feedback:</span> &quot;{l.human_feedback}&quot;</div>}
+                      <div className="text-xs text-vyuha-muted bg-[#09090b] p-3 rounded border-l-2 border-[#27272a] prose prose-invert prose-sm max-w-none">
+                        <div className="mb-1 text-xs opacity-70 uppercase font-bold tracking-wider text-vyuha-primary">Agent Reflection</div>
+                        <ReactMarkdown className="text-vyuha-muted">{l.agent_reflection}</ReactMarkdown>
+                        {l.human_feedback && <div className="mt-4 text-white"><span className="uppercase font-bold tracking-wider opacity-70 text-vyuha-primary">Human Feedback:</span> &quot;{l.human_feedback}&quot;</div>}
                       </div>
                     </div>
                   </div>
