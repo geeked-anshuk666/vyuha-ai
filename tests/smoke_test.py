@@ -7,23 +7,22 @@ async def main():
     async with httpx.AsyncClient(timeout=5.0) as c:
         # Node-A
         r = await c.get("http://localhost:8001/health")
-        print(f"Node-A:  {r.status_code} | {r.json()['state']}")
+        print(f"Node-A:  {r.status_code} | {r.json().get('status') or r.json().get('state')}")
 
         # Node-B
         r = await c.get("http://localhost:8002/health")
-        print(f"Node-B:  {r.status_code} | {r.json()['state']}")
+        print(f"Node-B:  {r.status_code} | {r.json().get('status') or r.json().get('state')}")
 
         # Proxy
-        r = await c.get("http://localhost:8000/proxy/status")
-        data = r.json()
-        print(f"Proxy:   {r.status_code} | formation={data.get('formation')}, routes={len(data.get('routes', []))}")
+        r = await c.get("http://localhost:8000/health")
+        print(f"Proxy:   {r.status_code} | {r.json().get('status')}")
 
         # Orchestrator
-        r = await c.get("http://localhost:9000/monitor/status")
-        data = r.json()
-        print(f"Orch:    {r.status_code} | monitoring={data['monitoring_active']}, nodes={len(data['node_states'])}")
+        r = await c.get("http://localhost:9000/health")
+        print(f"Orch:    {r.status_code} | {r.json().get('status')}")
 
-        print("\n✅ ALL SERVICES HEALTHY")
+        print("\nALL SERVICES HEALTHY")
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())

@@ -174,6 +174,10 @@ async def verify_api_key(api_key: str = Depends(api_key_header)):
 
 # --- Proxy Endpoints ---
 
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "component": "proxy"}
+
 @app.get("/proxy/status", response_model=ProxyStatus)
 async def proxy_status():
     """Returns current proxy configuration and stats. Open for monitoring."""

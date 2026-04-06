@@ -150,6 +150,10 @@ async def rate_limit_middleware(request: Request, call_next):
 
 # --- Status & Monitoring ---
 
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "component": "orchestrator"}
+
 @app.get("/monitor/status", response_model=MonitorStatusResponse)
 async def get_monitor_status():
     """Dashboard endpoint: returns full system state at a glance."""
