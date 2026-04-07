@@ -77,8 +77,9 @@ export default function ChaosControls() {
       </div>
 
       <div className="space-y-4">
-        <NodeControls nodeName="node-a" />
-        <NodeControls nodeName="node-b" />
+        <NodeControls nodeName="aws" />
+        <NodeControls nodeName="azure" />
+        <NodeControls nodeName="gcp" />
       </div>
     </div>
   );

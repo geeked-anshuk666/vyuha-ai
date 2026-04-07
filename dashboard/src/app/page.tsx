@@ -166,25 +166,34 @@ export default function MissionControl() {
           <section id="topology-container" className="glass-panel p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-                <Activity className="w-5 h-5" /> Network Topology
+                <Activity className="w-5 h-5 text-vyuha-primary" /> Triple-Cloud Ecosystem
               </h2>
               <button onClick={handleTriage} className="text-xs bg-vyuha-primary hover:bg-vyuha-primary-hover text-white px-3 py-1.5 rounded transition">
                 Force Triage
               </button>
             </div>
             
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4">
               {status.node_states.map((node: NodeState) => (
-                <div key={node.node_name} className="flex items-center justify-between p-4 rounded-lg bg-[#121214] border border-[#27272a]">
-                  <div className="flex items-center gap-3">
-                    <Server className={node.state === "HEALTHY" ? "text-vyuha-success" : "text-vyuha-danger"} />
+                <div key={node.node_name} className={`flex items-center justify-between p-4 rounded-xl transition-all duration-500 ${
+                  node.state === "HEALTHY" 
+                    ? "bg-emerald-500/5 border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.05)]" 
+                    : "bg-rose-500/10 border-rose-500/30 shadow-[0_0_25px_rgba(244,63,94,0.1)] animate-pulse"
+                } border`}>
+                  <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-full ${node.state === "HEALTHY" ? "bg-emerald-500/20" : "bg-rose-500/20"}`}>
+                      <Server className={`w-6 h-6 ${node.state === "HEALTHY" ? "text-emerald-500" : "text-rose-500"}`} />
+                    </div>
                     <div>
-                      <div className="font-medium text-white">{node.node_name.toUpperCase()}</div>
-                      <div className="text-xs text-vyuha-muted">Seen: {new Date(node.checked_at).toLocaleTimeString()}</div>
+                      <div className="font-black text-white tracking-widest uppercase">{node.node_name}</div>
+                      <div className="text-[10px] text-vyuha-muted font-mono">PROBE: {new Date(node.checked_at).toLocaleTimeString()}</div>
                     </div>
                   </div>
-                  <div className={`px-2 py-1 text-xs font-bold rounded ${node.state === "HEALTHY" ? "bg-vyuha-success-bg text-vyuha-success" : "bg-vyuha-danger-bg text-vyuha-danger"}`}>
-                    {node.state}
+                  <div className="flex items-center gap-3">
+                    <div className={`text-[10px] font-black tracking-tighter uppercase ${node.state === "HEALTHY" ? "text-emerald-500" : "text-rose-500"}`}>
+                      {node.state === "HEALTHY" ? "Online" : "Fatal Error"}
+                    </div>
+                    <div className={`w-2 h-2 rounded-full ${node.state === "HEALTHY" ? "bg-emerald-500 animate-pulse shadow-[0_0_10px_#10b981]" : "bg-rose-500 shadow-[0_0_10px_#f43f5e]"}`} />
                   </div>
                 </div>
               ))}

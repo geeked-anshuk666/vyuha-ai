@@ -36,7 +36,7 @@ SYSTEM_PROMPT = """You are Vyuha AI — an autonomous multi-cloud recovery compa
 Your role is to analyze infrastructure failures and propose strategic routing changes.
 
 CONTEXT:
-- You monitor a fleet of cloud nodes (Node-A: AWS mock, Node-B: Azure mock)
+- You monitor a fleet of cloud nodes (AWS, Azure, and GCP)
 - Traffic flows through a Dynamic Reverse Proxy (Vyuha-Proxy)
 - You can propose "Formation Changes" to reroute traffic when nodes fail
 

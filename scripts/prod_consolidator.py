@@ -37,12 +37,16 @@ class Service:
         return 0
 
 services = [
-    # Node A (port 8001)
-    Service("NODE-A", "python -m uvicorn nodes.main:app --host 0.0.0.0 --port 8001", {"NODE_NAME": "node-a", "CLOUD_PROVIDER": "aws", "REGION": "us-east-1"}),
-    # Node B (port 8002)
-    Service("NODE-B", "python -m uvicorn nodes.main:app --host 0.0.0.0 --port 8002", {"NODE_NAME": "node-b", "CLOUD_PROVIDER": "azure", "REGION": "westeurope"}),
+    # Cloud Node: AWS (port 8001)
+    Service("AWS", "python -m uvicorn nodes.main:app --host 0.0.0.0 --port 8001", {"NODE_NAME": "aws", "CLOUD_PROVIDER": "aws", "REGION": "us-east-1"}),
+    # Cloud Node: AZURE (port 8002)
+    Service("AZURE", "python -m uvicorn nodes.main:app --host 0.0.0.0 --port 8002", {"NODE_NAME": "azure", "CLOUD_PROVIDER": "azure", "REGION": "westeurope"}),
+    # Cloud Node: GCP (port 8003)
+    Service("GCP", "python -m uvicorn nodes.main:app --host 0.0.0.0 --port 8003", {"NODE_NAME": "gcp", "CLOUD_PROVIDER": "gcp", "REGION": "asia-south1"}),
     # Proxy (port 8000)
     Service("PROXY", "python -m uvicorn proxy.main:app --host 0.0.0.0 --port 8000", {"CONFIG_PATH": "/app/proxy/prod_config.json"}),
+    # Load Generator & Metrics (port 8005)
+    Service("LOAD-TESTER", "python tests/load_tester.py", {"METRICS_PORT": "8005"}),
     # Orchestrator (port 9000 -> Expose this to Render via PORT env var)
     Service("ORCHESTRATOR", f"python -m uvicorn control_plane.main:app --host 0.0.0.0 --port {os.getenv('PORT', '9000')}")
 ]

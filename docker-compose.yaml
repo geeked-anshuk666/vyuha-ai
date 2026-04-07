@@ -1,12 +1,12 @@
 services:
   # --- DATA PLANE ---
 
-  node-a:
+  aws:
     build: ./nodes
-    container_name: vyuha-node-a
+    container_name: vyuha-aws
     environment:
-      - NODE_NAME=node-a
-      - CLOUD_PROVIDER=aws-mock
+      - NODE_NAME=aws
+      - CLOUD_PROVIDER=aws
       - REGION=us-east-1
     ports:
       - "8001:8000"
@@ -14,15 +14,28 @@ services:
       - vyuha-net
     restart: unless-stopped
 
-  node-b:
+  azure:
     build: ./nodes
-    container_name: vyuha-node-b
+    container_name: vyuha-azure
     environment:
-      - NODE_NAME=node-b
-      - CLOUD_PROVIDER=azure-mock
+      - NODE_NAME=azure
+      - CLOUD_PROVIDER=azure
       - REGION=westeurope
     ports:
       - "8002:8000"
+    networks:
+      - vyuha-net
+    restart: unless-stopped
+
+  gcp:
+    build: ./nodes
+    container_name: vyuha-gcp
+    environment:
+      - NODE_NAME=gcp
+      - CLOUD_PROVIDER=gcp
+      - REGION=asia-south1
+    ports:
+      - "8003:8000"
     networks:
       - vyuha-net
     restart: unless-stopped
@@ -41,8 +54,9 @@ services:
     networks:
       - vyuha-net
     depends_on:
-      - node-a
-      - node-b
+      - aws
+      - azure
+      - gcp
     restart: unless-stopped
 
   # --- CONTROL PLANE ---
@@ -67,8 +81,9 @@ services:
     networks:
       - vyuha-net
     depends_on:
-      - node-a
-      - node-b
+      - aws
+      - azure
+      - gcp
       - vyuha-proxy
     restart: unless-stopped
 

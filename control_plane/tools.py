@@ -24,14 +24,16 @@ IS_RENDER = os.getenv("RENDER", "false").lower() == "true"
 if IS_RENDER:
     PROXY_URL = "http://127.0.0.1:8000"
     NODE_URLS = {
-        "node-a": "http://127.0.0.1:8001",
-        "node-b": "http://127.0.0.1:8002",
+        "aws": "http://127.0.0.1:8001",
+        "azure": "http://127.0.0.1:8002",
+        "gcp": "http://127.0.0.1:8003",
     }
 else:
     PROXY_URL = "http://vyuha-proxy:8000"
     NODE_URLS = {
-        "node-a": "http://node-a:8000",
-        "node-b": "http://node-b:8000",
+        "aws": "http://aws:8000",
+        "azure": "http://azure:8000",
+        "gcp": "http://gcp:8000",
     }
 
 

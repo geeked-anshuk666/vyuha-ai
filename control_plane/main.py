@@ -388,7 +388,11 @@ import httpx
 @app.post("/chaos/{node_name}/fail")
 async def proxy_chaos_fail(node_name: str, request: Request):
     """Proxies chaos injection to internal nodes."""
-    node_map = {"node-a": "http://127.0.0.1:8001", "node-b": "http://127.0.0.1:8002"}
+    node_map = {
+        "aws": "http://127.0.0.1:8001", 
+        "azure": "http://127.0.0.1:8002", 
+        "gcp": "http://127.0.0.1:8003"
+    }
     if node_name not in node_map:
         raise HTTPException(status_code=404, detail="Node mapping not found")
         
