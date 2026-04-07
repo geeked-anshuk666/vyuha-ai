@@ -47,7 +47,7 @@ async def tool_check_node_health(node_name: str) -> NodeHealthSnapshot:
         )
 
     try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
+        async with httpx.AsyncClient(timeout=3.0) as client:
             start = datetime.utcnow()
             resp = await client.get(f"{url}/health")
             elapsed = (datetime.utcnow() - start).total_seconds() * 1000
@@ -55,19 +55,25 @@ async def tool_check_node_health(node_name: str) -> NodeHealthSnapshot:
 
             if resp.status_code == 200:
                 data = resp.json()
+                # Defensive: always uppercase so enum lookup never fails
+                raw_state = str(data.get("state", "UNKNOWN")).upper()
                 return NodeHealthSnapshot(
                     node_name=node_name, url=url,
-                    state=NodeState(data["state"]),
+                    state=NodeState(raw_state),
                     response_time_ms=round(elapsed, 2),
                     checked_at=now_iso
                 )
             elif resp.status_code == 503:
                 detail = resp.json().get("detail", {})
+                # A 503 from a FLAKY node means the packet drop triggered — report FLAKY not DEAD
+                raw_state = detail.get("state", "DEAD") if isinstance(detail, dict) else "DEAD"
+                mapped_state = NodeState(raw_state.upper()) if raw_state.upper() in NodeState._value2member_map_ else NodeState.DEAD
                 return NodeHealthSnapshot(
                     node_name=node_name, url=url,
-                    state=NodeState.DEAD,
+                    state=mapped_state,
                     response_time_ms=round(elapsed, 2),
-                    error=detail.get("reason", "503 Service Unavailable"),
+                    error=detail.get("reason", "503 Service Unavailable") if isinstance(detail, dict) else str(detail),
+                    checked_at=now_iso,
                 )
             else:
                 return NodeHealthSnapshot(
@@ -86,7 +92,7 @@ async def tool_check_node_health(node_name: str) -> NodeHealthSnapshot:
         return NodeHealthSnapshot(
             node_name=node_name, url=url,
             state=NodeState.DEAD,
-            error="Health check timed out (>5s)",
+            error="Health check timed out (>3s)",
         )
 
 
