@@ -429,3 +429,16 @@ async def manual_triage():
         "status": "proposal_created",
         "proposal": proposal.model_dump(),
     }
+
+
+@app.get("/monitor/metrics")
+async def get_metrics_bridge():
+    """Bridge to the internal load generator metrics."""
+    try:
+        async with httpx.AsyncClient(timeout=2.0) as client:
+            resp = await client.get("http://127.0.0.1:8005/metrics")
+            if resp.status_code == 200:
+                return resp.json()
+            return {"history": [], "error": f"Metrics server returned {resp.status_code}"}
+    except Exception as e:
+        return {"history": [], "error": str(e)}

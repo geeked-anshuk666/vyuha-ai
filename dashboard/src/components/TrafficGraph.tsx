@@ -2,20 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { Activity } from "lucide-react";
+import { Activity, Loader2 } from "lucide-react";
+import { baseURL } from "@/lib/api";
 
 export default function TrafficGraph() {
   const [data, setData] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchMetrics = async () => {
-      if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') return;
       try {
-        const res = await fetch("http://localhost:8005/metrics");
+        const res = await fetch(`${baseURL}/monitor/metrics`);
         const json = await res.json();
-        setData(json.history);
+        if (json.history) {
+            setData(json.history);
+        }
       } catch (e) {
-        // Silently fail if load tester is not running
+        // Silently fail if load tester/bridge is not running
       }
     };
 
@@ -38,8 +40,9 @@ export default function TrafficGraph() {
 
       <div className="h-48 w-full">
         {data.length === 0 ? (
-          <div className="h-full w-full flex items-center justify-center text-vyuha-muted text-sm italic border border-dashed border-vyuha-border rounded-lg">
-            Waiting for Python Load Generator (port 8005)...
+          <div className="h-full w-full flex flex-col items-center justify-center text-vyuha-muted text-sm italic border border-dashed border-vyuha-border rounded-lg gap-3">
+            <Loader2 className="w-5 h-5 animate-spin text-vyuha-primary" />
+            Connecting to Z.ai Gen-Engine Pulse...
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
