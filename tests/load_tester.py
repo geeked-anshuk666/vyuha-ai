@@ -1,6 +1,7 @@
 import time
 import asyncio
 import httpx
+import os
 from collections import deque
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,10 +29,14 @@ current_fail = 0
 
 async def traffic_generator():
     global current_success, current_fail
+    # Configurable delay to prevent log flooding during deployment (default 0.5s)
+    load_delay = float(os.getenv("LOAD_DELAY", "0.5"))
+    logging.info(f"Starting traffic generator with {load_delay}s delay (approx {1/load_delay if load_delay > 0 else 0} RPS)")
+    
     async with httpx.AsyncClient(timeout=2.0) as client:
         while True:
             try:
-                # We hit the proxy, which forwards to node-a / node-b
+                # We hit the proxy, which forwards to our triple-cloud nodes
                 resp = await client.get("http://localhost:8000/health")
                 if resp.status_code == 200:
                     current_success += 1
@@ -40,8 +45,8 @@ async def traffic_generator():
             except httpx.RequestError:
                 current_fail += 1
             
-            # Fire at approx 50 requests per second (using small sleep to yield loop)
-            await asyncio.sleep(0.02)
+            # Default throttled rate to save log space and resources
+            await asyncio.sleep(load_delay)
 
 async def metrics_aggregator():
     global current_success, current_fail

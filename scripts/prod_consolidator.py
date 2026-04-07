@@ -46,7 +46,7 @@ services = [
     # Proxy (port 8000)
     Service("PROXY", "python -m uvicorn proxy.main:app --host 0.0.0.0 --port 8000", {"CONFIG_PATH": "/app/proxy/prod_config.json"}),
     # Load Generator & Metrics (port 8005)
-    Service("LOAD-TESTER", "python tests/load_tester.py", {"METRICS_PORT": "8005"}),
+    Service("LOAD-TESTER", "python tests/load_tester.py", {"METRICS_PORT": "8005", "LOAD_DELAY": "0.5"}),
     # Orchestrator (port 9000 -> Expose this to Render via PORT env var)
     Service("ORCHESTRATOR", f"python -m uvicorn control_plane.main:app --host 0.0.0.0 --port {os.getenv('PORT', '9000')}")
 ]
