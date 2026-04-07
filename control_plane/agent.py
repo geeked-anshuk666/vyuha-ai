@@ -356,11 +356,17 @@ async def reflect_on_outcome(
     )
     learning = await db.create_learning(learning)
 
-    # Update statuses
-    status = IncidentStatus.APPLIED if was_approved else IncidentStatus.REJECTED
-    await db.update_incident_status(incident.id, IncidentStatus.REFLECTED,
-                                     resolved_at=datetime.utcnow().isoformat())
-    await db.update_proposal_status(proposal.id, status)
+    # Update statuses:
+    # - APPLIED = fix approved, watching for node recovery
+    # - REFLECTED = fully closed (set when node actually heals)
+    # - REJECTED = human rejected, learning recorded
+    final_status = IncidentStatus.APPLIED if was_approved else IncidentStatus.REJECTED
+    await db.update_incident_status(
+        incident.id,
+        final_status,
+        resolved_at=datetime.utcnow().isoformat() if not was_approved else None,
+    )
+    await db.update_proposal_status(proposal.id, final_status)
 
     logger.info(f"Reflection complete: lesson='{learning.lesson_learned[:80]}...'")
     return learning

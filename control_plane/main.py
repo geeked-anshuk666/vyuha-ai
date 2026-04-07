@@ -89,6 +89,16 @@ async def health_monitor_loop() -> None:
             recovered = runtime._known_dead_nodes - unhealthy_nodes
             if recovered:
                 logger.info(f"Nodes recovered: {recovered}")
+                # Auto-close any APPLIED incidents for recovered nodes
+                from datetime import datetime as dt
+                all_active = await db.get_active_incidents()
+                for inc in all_active:
+                    if inc.node_name in recovered and str(inc.status.value) == "applied":
+                        await db.update_incident_status(
+                            inc.id, IncidentStatus.REFLECTED,
+                            resolved_at=dt.utcnow().isoformat()
+                        )
+                        logger.info(f"Incident #{inc.id} auto-closed: {inc.node_name} recovered")
 
             runtime._known_dead_nodes = unhealthy_nodes
 
@@ -276,8 +286,8 @@ async def approve_proposal(request: ApprovalRequest):
         human_feedback=request.feedback or "Approved without additional feedback",
     )
 
-    # Clear the dead node from known set so monitor doesn't re-trigger
-    runtime._known_dead_nodes.discard(proposal.formation_change.target_node)
+    # Mark the node as 'handled' so the monitor doesn't re-triage until it actually heals
+    runtime._known_dead_nodes.add(proposal.formation_change.target_node)
 
     return {
         "status": "approved_and_applied",
@@ -307,6 +317,9 @@ async def reject_proposal(request: RejectionRequest):
         was_approved=False,
         human_feedback=request.feedback,
     )
+
+    # Even on rejection, mark node as 'handled' — human has seen this, don't spam new proposals
+    runtime._known_dead_nodes.add(proposal.formation_change.target_node)
 
     return {
         "status": "rejected",

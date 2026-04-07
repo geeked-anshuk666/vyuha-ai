@@ -120,7 +120,9 @@ async def get_active_incidents() -> list[Incident]:
     db = await get_db()
     try:
         cursor = await db.execute(
-            "SELECT * FROM incidents WHERE status NOT IN ('applied', 'reflected') ORDER BY id DESC"
+            # Keep 'applied' visible (node still unhealthy, fix applied but not healed)
+            # Only hide 'reflected' (fully closed after node heals)
+            "SELECT * FROM incidents WHERE status NOT IN ('reflected') ORDER BY id DESC"
         )
         rows = await cursor.fetchall()
         return [_row_to_incident(r) for r in rows]
