@@ -12,8 +12,9 @@ const API = axios.create({
 
 export interface NodeState {
   node_name: string;
-  state: "HEALTHY" | "DEAD";
+  state: "HEALTHY" | "DEAD" | "DEGRADED" | "HIGH_LATENCY" | "FLAKY" | "UNKNOWN";
   checked_at: string;
+  response_time_ms?: number;
   error?: string;
 }
 

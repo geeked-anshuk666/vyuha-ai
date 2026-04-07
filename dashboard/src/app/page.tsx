@@ -189,11 +189,18 @@ export default function MissionControl() {
                       <div className="text-[10px] text-vyuha-muted font-mono">PROBE: {new Date(node.checked_at).toLocaleTimeString()}</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className={`text-[10px] font-black tracking-tighter uppercase ${node.state === "HEALTHY" ? "text-emerald-500" : "text-rose-500"}`}>
-                      {node.state === "HEALTHY" ? "Online" : "Fatal Error"}
+                  <div className="flex items-center gap-6">
+                    <div className="text-right">
+                      <div className={`text-[10px] font-black tracking-tighter uppercase ${node.state === "HEALTHY" ? "text-emerald-500" : "text-rose-500"}`}>
+                        {node.state === "HEALTHY" ? "Online" : "Fatal Error"}
+                      </div>
+                      {node.response_time_ms && (
+                        <div className="text-[9px] font-mono text-vyuha-primary/60 flex items-center justify-end gap-1 font-bold">
+                           {node.response_time_ms.toFixed(0)}<span className="opacity-50 uppercase">ms</span>
+                        </div>
+                      )}
                     </div>
-                    <div className={`w-2 h-2 rounded-full ${node.state === "HEALTHY" ? "bg-emerald-500 animate-pulse shadow-[0_0_10px_#10b981]" : "bg-rose-500 shadow-[0_0_10px_#f43f5e]"}`} />
+                    <div className={`w-2.5 h-2.5 rounded-full ${node.state === "HEALTHY" ? "bg-emerald-500 animate-pulse shadow-[0_0_12px_#10b981]" : "bg-rose-500 shadow-[0_0_15px_#f43f5e] animate-pulse"}`} />
                   </div>
                 </div>
               ))}

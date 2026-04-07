@@ -71,7 +71,9 @@ Respond in this JSON format:
     "confidence": 0.0-1.0,
     "proposed_formation": {{
         "formation": "formation-name",
-        "routes": [...]
+        "routes": [
+            {{"name": "aws|azure|gcp", "url": "http://...", "weight": 0-100, "active": true|false}}
+        ]
     }}
 }}
 """

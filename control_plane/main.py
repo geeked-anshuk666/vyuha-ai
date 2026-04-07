@@ -354,7 +354,7 @@ async def check_proxy_health():
 @app.get("/chaos/{node_name}/health")
 async def proxy_chaos_health(node_name: str):
     """Proxies health checks to internal nodes for diagnostics."""
-    node_map = {"node-a": "http://127.0.0.1:8001", "node-b": "http://127.0.0.1:8002"}
+    node_map = {"aws": "http://127.0.0.1:8001", "azure": "http://127.0.0.1:8002", "gcp": "http://127.0.0.1:8003"}
     if node_name not in node_map:
         raise HTTPException(status_code=404, detail="Node mapping not found")
         
@@ -404,7 +404,7 @@ async def proxy_chaos_fail(node_name: str, request: Request):
 @app.post("/chaos/{node_name}/recover")
 async def proxy_chaos_recover(node_name: str):
     """Proxies recovery commands to internal nodes."""
-    node_map = {"node-a": "http://127.0.0.1:8001", "node-b": "http://127.0.0.1:8002"}
+    node_map = {"aws": "http://127.0.0.1:8001", "azure": "http://127.0.0.1:8002", "gcp": "http://127.0.0.1:8003"}
     if node_name not in node_map:
         raise HTTPException(status_code=404, detail="Node mapping not found")
         

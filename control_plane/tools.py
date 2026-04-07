@@ -51,6 +51,7 @@ async def tool_check_node_health(node_name: str) -> NodeHealthSnapshot:
             start = datetime.utcnow()
             resp = await client.get(f"{url}/health")
             elapsed = (datetime.utcnow() - start).total_seconds() * 1000
+            now_iso = datetime.utcnow().isoformat()
 
             if resp.status_code == 200:
                 data = resp.json()
@@ -58,6 +59,7 @@ async def tool_check_node_health(node_name: str) -> NodeHealthSnapshot:
                     node_name=node_name, url=url,
                     state=NodeState(data["state"]),
                     response_time_ms=round(elapsed, 2),
+                    checked_at=now_iso
                 )
             elif resp.status_code == 503:
                 detail = resp.json().get("detail", {})
@@ -221,7 +223,7 @@ def tool_build_failover_config(
 TOOL_REGISTRY = {
     "check_node_health": {
         "description": "Check the health status of a specific node by name",
-        "parameters": {"node_name": "string — the node identifier (e.g., 'node-a')"},
+        "parameters": {"node_name": "string — the cloud node name (aws, azure, or gcp)"},
         "function": tool_check_node_health,
     },
     "check_all_nodes": {
