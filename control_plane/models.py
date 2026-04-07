@@ -12,12 +12,12 @@ from pydantic import BaseModel, Field
 # --- Enums ---
 
 class NodeState(str, Enum):
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    HIGH_LATENCY = "high_latency"
-    FLAKY = "flaky"
-    DEAD = "dead"
-    UNKNOWN = "unknown"
+    HEALTHY = "HEALTHY"
+    DEGRADED = "DEGRADED"
+    HIGH_LATENCY = "HIGH_LATENCY"
+    FLAKY = "FLAKY"
+    DEAD = "DEAD"
+    UNKNOWN = "UNKNOWN"
 
 
 class IncidentSeverity(str, Enum):

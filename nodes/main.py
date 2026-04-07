@@ -18,11 +18,11 @@ from pydantic import BaseModel, Field
 # --- Models ---
 
 class NodeState(str, Enum):
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    HIGH_LATENCY = "high_latency"
-    FLAKY = "flaky"
-    DEAD = "dead"
+    HEALTHY = "HEALTHY"
+    DEGRADED = "DEGRADED"
+    HIGH_LATENCY = "HIGH_LATENCY"
+    FLAKY = "FLAKY"
+    DEAD = "DEAD"
 
 
 class HealthResponse(BaseModel):

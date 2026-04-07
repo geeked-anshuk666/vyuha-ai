@@ -62,19 +62,16 @@ async def health_monitor_loop() -> None:
     while True:
         try:
             node_states = await tool_check_all_nodes()
-            # Normalize casing for the API contract (uppercase)
-            for ns in node_states:
-                ns.state = ns.state.upper()
             runtime.node_states = node_states
 
             active_incident_nodes = {i.node_name for i in await db.get_active_incidents()}
 
-            # Only trigger triage if the node is dead AND not already in an active incident
-            dead_nodes = {n.node_name for n in node_states if n.state == "DEAD"}
-            new_dead = (dead_nodes - runtime._known_dead_nodes) - active_incident_nodes
+            # Only trigger triage if the node is UNHEALTHY AND not already in an active incident
+            unhealthy_nodes = {n.node_name for n in node_states if n.state != NodeState.HEALTHY}
+            new_unhealthy = (unhealthy_nodes - runtime._known_dead_nodes) - active_incident_nodes
 
-            if new_dead and not runtime.circuit_breaker_active:
-                logger.warning(f"NEW failure detected (untracked): {new_dead}")
+            if new_unhealthy and not runtime.circuit_breaker_active:
+                logger.warning(f"UNHEALTHY state detected (untracked): {new_unhealthy}")
                 try:
                     learnings_ctx = await get_learnings_context()
                     proposal = await triage_incident(node_states, learnings_ctx)
@@ -89,11 +86,11 @@ async def health_monitor_loop() -> None:
                         runtime.circuit_breaker_active = True
                         logger.critical("CIRCUIT BREAKER ACTIVATED — Manual Override required")
 
-            recovered = runtime._known_dead_nodes - dead_nodes
+            recovered = runtime._known_dead_nodes - unhealthy_nodes
             if recovered:
                 logger.info(f"Nodes recovered: {recovered}")
 
-            runtime._known_dead_nodes = dead_nodes
+            runtime._known_dead_nodes = unhealthy_nodes
 
         except Exception as e:
             logger.error(f"Monitor loop error: {e}")
